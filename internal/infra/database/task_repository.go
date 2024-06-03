@@ -24,6 +24,9 @@ type task struct {
 type TaskRepository interface {
 	Save(t domain.Task) (domain.Task, error)
 	FindByUserId(uId uint64) ([]domain.Task, error)
+	FindById(id uint64) (domain.Task, error)
+	Update(t domain.Task) (domain.Task, error)
+	Delete(id uint64) error
 }
 
 type taskRepository struct {
@@ -62,6 +65,33 @@ func (r taskRepository) FindByUserId(uId uint64) ([]domain.Task, error) {
 
 	result := r.mapModelToDomainCollection(tasks)
 	return result, nil
+}
+
+func (r taskRepository) FindById(id uint64) (domain.Task, error) {
+	var tsk task
+	err := r.coll.Find(db.Cond{"id": id}).One(&tsk)
+	if err != nil {
+		return domain.Task{}, err
+	}
+	return r.mapModelToDomain(tsk), nil
+}
+
+func (r taskRepository) Update(t domain.Task) (domain.Task, error) {
+	tsk := r.mapDomainToModel(t)
+	tsk.UpdatedDate = time.Now()
+	err := r.coll.Find(db.Cond{"id": tsk.Id}).Update(tsk)
+	if err != nil {
+		return domain.Task{}, err
+	}
+	return r.mapModelToDomain(tsk), nil
+}
+
+func (r taskRepository) Delete(id uint64) error {
+	err := r.coll.Find(db.Cond{"id": id}).Delete()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r taskRepository) mapDomainToModel(t domain.Task) task {

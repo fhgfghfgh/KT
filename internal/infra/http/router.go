@@ -112,6 +112,18 @@ func TaskRouter(r chi.Router, tc controllers.TaskController) {
 			"/",
 			tc.FindByUserId(),
 		)
+		apiRouter.Get(
+			"/{taskId}",
+			tc.FindById(),
+		)
+		apiRouter.Put(
+			"/{taskId}",
+			tc.Update(),
+		)
+		apiRouter.Delete(
+			"/{taskId}",
+			tc.Delete(),
+		)
 	})
 }
 
